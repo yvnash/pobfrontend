@@ -66,4 +66,4 @@ deploy:
   target_commitish: $TRAVIS_COMMIT
 
 after_deploy:
-  - ./github.sh
+  - bash github.sh
