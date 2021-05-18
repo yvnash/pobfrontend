@@ -15,7 +15,7 @@ pob: load_pob luacurl frontend
 	rmdir lua; \
 	cp ../lcurl.so .; \
 	mv src/* .; \
-    rmdir src; \
+	rmdir src; \
 	popd
 
 frontend: 
