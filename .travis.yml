@@ -1,6 +1,8 @@
 branches:
+  only:
+  - master
   except:
-    - PathOfBuilding
+  - PathOfBuilding
  
 jobs:
   include:
