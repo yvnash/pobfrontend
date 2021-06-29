@@ -1,0 +1,81 @@
+name: CI
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+      - run: sudo apt-get install xvfb build-essential ninja-build x11-apps imagemagick libcurl4-openssl-dev
+      - run: make -f Makefile.linux clean
+      - run: make -f Makefile.linux tools
+      - run: make -f Makefile.linux
+      - name: Package tar.xz archive
+        run: tar -cf - -C ${GITHUB_WORKSPACE}/PathOfBuilding/src $(ls -A ${GITHUB_WORKSPACE}"/PathOfBuilding/src") | xz -c > PathOfBuilding.linux.tar.xz
+      - name: Cheking GUI 
+        env:
+          IMGUR_CLIENT_ID: ${{ secrets.IMGUR_CLIENT_ID }}
+          GIT_TOKEN: ${{ secrets.GIT_TOKEN }} 
+          DISPLAY: :10
+        run: |
+            pushd ${GITHUB_WORKSPACE}/PathOfBuilding/src
+            Xvfb :10 -screen 0 1024x768x24 &
+            sleep 10
+            ./PathOfBuilding &
+            sleep 10
+            xwd -root -silent -display :10 | convert xwd:- png:/tmp/sl.png
+            export IMG_URL=`curl -L -X POST https://api.imgur.com/3/image -H "Authorization: Client-ID ${IMGUR_CLIENT_ID}" -F image=@/tmp/sl.png | jq '.data | .link' | tr -d '"'`
+            pull_number=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
+            curl -X POST -H "Accept: application/vnd.github.v3+json" \
+              -H "Authorization: token ${GIT_TOKEN}" \
+              https://api.github.com/repos/aspel/pobfrontend/issues/${pull_number}/comments \
+              -d "{\"body\":\"![Screenshot Linux](${IMG_URL})\n${GITHUB_SHA} : Linux\"}"
+            popd
+            echo $IMG_URL
+        if: github.ref != 'refs/heads/master'
+      - run: tar -tvf PathOfBuilding.linux.tar.xz
+      - name: Upload artifacts into Github
+        uses: ncipollo/release-action@v1
+        with:
+          artifact: "PathOfBuilding.linux.tar.xz"
+          token: ${{ secrets.GITHUB_TOKEN }}
+          allowUpdates: true
+        if: github.ref == 'refs/heads/master'
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+      - run: brew install make ninja
+      - run: make -f Makefile.darwin clean
+      - run: make -f Makefile.darwin tools
+      - run: make -f Makefile.darwin
+      - name: Package tar.xz archive
+        run: tar -cf - PathOfBuilding.app | xz -c > PathOfBuilding.darwin.tar.xz
+      - name: Cheking GUI 
+        env:
+          IMGUR_CLIENT_ID: ${{ secrets.IMGUR_CLIENT_ID }}
+          GIT_TOKEN: ${{ secrets.GIT_TOKEN }} 
+        run: |
+            ./PathOfBuilding.app/Contents/MacOS/pobWrapper.sh &
+            sleep 10
+            screencapture /tmp/sl.png
+            export IMG_URL=`curl -L -X POST https://api.imgur.com/3/image -H "Authorization: Client-ID ${IMGUR_CLIENT_ID}" -F image=@/tmp/sl.png | jq '.data | .link' | tr -d '"'`
+            pull_number=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
+            curl -X POST -H "Accept: application/vnd.github.v3+json" \
+              -H "Authorization: token ${GIT_TOKEN}" \
+              https://api.github.com/repos/aspel/pobfrontend/issues/${pull_number}/comments \
+              -d "{\"body\":\"![Screenshot MacOS](${IMG_URL})\n${GITHUB_SHA} : MacOS\"}"
+            echo $IMG_URL
+        if: github.ref != 'refs/heads/master'
+      - run: tar -tvf PathOfBuilding.darwin.tar.xz
+      - name: Upload artifacts into Github
+        uses: ncipollo/release-action@v1
+        with:
+          artifact: "tar -tvf PathOfBuilding.darwin.tar.xz"
+          token: ${{ secrets.GITHUB_TOKEN }}
+          allowUpdates: true
+        if: github.ref == 'refs/heads/master'
