@@ -8,6 +8,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - id: time
+        run: |
+          time=nightly-$(date +'%Y/%m/%d')
+          echo "::set-output name=time::$time"
       - uses: actions/checkout@v2
       - run: sudo apt-get install xvfb build-essential ninja-build x11-apps imagemagick libcurl4-openssl-dev
       - run: make -f Makefile.linux clean
@@ -40,9 +44,12 @@ jobs:
       - name: Upload artifacts into Github
         uses: ncipollo/release-action@v1
         with:
-          artifact: "PathOfBuilding.linux.tar.xz"
+          artifacts: "PathOfBuilding.linux.tar.xz"
           token: ${{ secrets.GITHUB_TOKEN }}
           allowUpdates: true
+          tag: PathOfBuilding
+          body: "${{ steps.time.output.time }}"
+          commit: ${{ env.GITHUB_SHA }}
         if: github.ref == 'refs/heads/master'
   build-macos:
     runs-on: macos-latest
@@ -72,10 +79,12 @@ jobs:
             echo $IMG_URL
         if: github.ref != 'refs/heads/master'
       - run: tar -tvf PathOfBuilding.darwin.tar.xz
-      - name: Upload artifacts into Github
+      - name: Upload MacOS artifacts into Github
         uses: ncipollo/release-action@v1
         with:
-          artifact: "tar -tvf PathOfBuilding.darwin.tar.xz"
+          artifacts: "PathOfBuilding.darwin.tar.xz"
           token: ${{ secrets.GITHUB_TOKEN }}
           allowUpdates: true
+          tag: PathOfBuilding
         if: github.ref == 'refs/heads/master'
+  
