@@ -6,6 +6,16 @@ A cross-platform [Path of Building](https://github.com/Openarl/PathOfBuilding) d
 Building
 --------
 
+### Steps to build
+
+```sh
+# Run this only once after installing Homebrew to install dependencies
+make tools
+
+# Build the entire app
+make
+```
+
 ### Dependencies:
 
 - Qt5
@@ -20,6 +30,8 @@ Building
 - meson
 - pkg-config
 - ninja (optional, can tell meson to generate makefiles if you prefer)
+
+## Old manual steps to build:
 
 ### Build Lua-Curl:
 

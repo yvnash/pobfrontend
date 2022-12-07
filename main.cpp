@@ -811,7 +811,7 @@ DrawStringCmd::DrawStringCmd(float X, float Y, int Align, int Size, int Font, co
             break;
         case 0:
         default:
-            fontName = "Bitstream Vera Mono";
+            fontName = "Bitstream Vera Sans Mono";
             break;
         }
         QFont font(fontName);
@@ -910,7 +910,7 @@ static int l_DrawStringWidth(lua_State* L)
         fontName = "Liberation Sans Bold";
         fontKey = "2";
     } else {
-        fontName = "Bitstream Vera Mono";
+        fontName = "Bitstream Vera Sans Mono";
     }
     QString text(lua_tostring(L, 3));
 
@@ -946,7 +946,7 @@ static int l_DrawStringCursorIndex(lua_State* L)
     } else if (fontName == "VAR BOLD") {
         fontName = "Liberation Sans Bold";
     } else {
-        fontName = "Bitstream Vera Mono";
+        fontName = "Bitstream Vera Sans Mono";
     }
     QString text(lua_tostring(L, 3));
 
@@ -1754,6 +1754,14 @@ int main(int argc, char **argv)
     }
     lua_setglobal(L, "arg");
 
+    // Override the package.path so dkjson.lua and other libraries are
+    // can be added via `require`
+    std::string basePath = pobwindow->basePath.toStdString();
+    std::string extraPathCommand = "package.path = package.path .. \";"
+        + basePath
+        + "/runtime/lua/?.lua\"";
+    luaL_dostring(L, extraPathCommand.c_str());
+
     int result = luaL_dofile(L, "Launch.lua");
     if (result != 0) {
         lua_error(L);
@@ -1766,9 +1774,11 @@ int main(int argc, char **argv)
     }
     pobwindow->resize(800, 600);
     pobwindow->show();
-    QFontDatabase::addApplicationFont("VeraMono.ttf");
-    QFontDatabase::addApplicationFont("LiberationSans-Regular.ttf");
-    QFontDatabase::addApplicationFont("LiberationSans-Bold.ttf");
+
+    // Add the bundled fonts
+    QFontDatabase::addApplicationFont(QDir::currentPath() + "/VeraMono.ttf");
+    QFontDatabase::addApplicationFont(QDir::currentPath() + "/LiberationSans-Regular.ttf");
+    QFontDatabase::addApplicationFont(QDir::currentPath() + "/LiberationSans-Bold.ttf");
     return app.exec();
 }
 

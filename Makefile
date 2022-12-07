@@ -13,7 +13,9 @@ all: frontend pob
 	echo 'Finished'
 
 pob: load_pob luacurl frontend
-	pushd PathOfBuilding; \
+	rm -rf PathOfBuildingBuild; \
+	cp -rf PathOfBuilding PathOfBuildingBuild; \
+	pushd PathOfBuildingBuild; \
 	unzip runtime-win32.zip lua/xml.lua lua/base64.lua lua/sha1.lua; \
 	mv lua/*.lua .; \
 	rmdir lua; \
@@ -26,35 +28,22 @@ frontend:
 	meson -Dbuildtype=release --prefix=${DIR}/PathOfBuilding.app --bindir=Contents/MacOS build
 
 load_pob:
-	git clone --depth 1 https://github.com/PathOfBuildingCommunity/PathOfBuilding.git; \
+	git clone https://github.com/PathOfBuildingCommunity/PathOfBuilding.git; \
 	pushd PathOfBuilding; \
-	rm -rf .git; \
+	git add . && git fetch && git reset --hard origin/dev; \
 	popd
 
+# The sed below ensures that we only replace `lua` with `luajit` once
 luacurl:
 	git clone --depth 1 https://github.com/Lua-cURL/Lua-cURLv3.git; \
 	pushd Lua-cURLv3; \
-	sed -i '' 's/\?= lua/\?= luajit/' Makefile; \
+	sed -i '' 's/\?= lua$$/\?= luajit/' Makefile; \
 	make; \
 	mv lcurl.so ../lcurl.so; \
 	popd
 
-tools: qt lua zlib meson jq
-
-jq:
-	brew install jq
-
-qt:
-	brew install qt5
-
-lua:
-	brew install luajit
-
-zlib:
-	brew install zlib
-
-meson:
-	brew install meson
+tools:
+	brew install qt@5 luajit zlib meson
 
 clean:
-	rm -rf PathOfBuilding PathOfBuilding.app Lua-cURLv3 lcurl.so build
+	rm -rf PathOfBuildingBuild PathOfBuilding PathOfBuilding.app Lua-cURLv3 lcurl.so build

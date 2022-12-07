@@ -1,3 +1,7 @@
 lcurl.so
 Lua-cURLv3
-PathOfBuilding
+/PathOfBuilding
+/PathOfBuildingBuild
+/PathOfBuilding.app
+/PathOfBuilding.*
+.DS_Store
