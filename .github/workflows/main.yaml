@@ -6,61 +6,6 @@ on:
   schedule:
     - cron:  '30 13 * * 5'
 jobs:
-  build-linux:
-    runs-on: ubuntu-latest
-    steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - id: time
-        run: |
-          time=nightly-$(date +'%Y/%m/%d')
-          echo "::set-output name=time::$time"
-      - uses: actions/checkout@v2
-      - run: sudo apt-get install xvfb build-essential ninja-build x11-apps imagemagick libcurl4-openssl-dev
-      - run: make -f Makefile.linux clean
-      - run: make -f Makefile.linux tools
-      - run: make -f Makefile.linux
-      - name: Package tar.xz archive
-        run: tar -cf - -C ${GITHUB_WORKSPACE}/PathOfBuilding/src $(ls -A ${GITHUB_WORKSPACE}"/PathOfBuilding/src") | xz -c > PathOfBuilding.linux.tar.xz
-      - name: Cheking GUI 
-        env:
-          IMGUR_CLIENT_ID: ${{ secrets.IMGUR_CLIENT_ID }}
-          GIT_TOKEN: ${{ secrets.GIT_TOKEN }} 
-          DISPLAY: :10
-        run: |
-            pushd ${GITHUB_WORKSPACE}/PathOfBuilding/src
-            Xvfb :10 -screen 0 1024x768x24 &
-            sleep 10
-            ./PathOfBuilding &
-            sleep 10
-            xwd -root -silent -display :10 | convert xwd:- png:/tmp/sl.png
-            export IMG_URL=`curl -L -X POST https://api.imgur.com/3/image -H "Authorization: Client-ID ${IMGUR_CLIENT_ID}" -F image=@/tmp/sl.png | jq '.data | .link' | tr -d '"'`
-            pull_number=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
-            curl -X POST -H "Accept: application/vnd.github.v3+json" \
-              -H "Authorization: token ${GIT_TOKEN}" \
-              https://api.github.com/repos/aspel/pobfrontend/issues/${pull_number}/comments \
-              -d "{\"body\":\"![Screenshot Linux](${IMG_URL})\n${GITHUB_SHA} : Linux\"}"
-            popd
-            echo $IMG_URL
-        if: github.ref != 'refs/heads/master'
-      - run: tar -tvf PathOfBuilding.linux.tar.xz
-      - name: Update release tag
-        run: |
-          git config --local user.name "${GITHUB_ACTOR}"
-          git config --local user.email "aspellip@gmail.com"
-          git tag -f PathOfBuilding
-          git remote add gh https://$GITHUB_ACTOR:$GIT_TOKEN@github.com/$GITHUB_REPOSITORY.git
-          git push -f gh PathOfBuilding
-          git remote remove gh
-        if: github.ref == 'refs/heads/master'
-      - name: Upload Linux artifacts into Github
-        uses: ncipollo/release-action@v1
-        with:
-          artifacts: "PathOfBuilding.linux.tar.xz"
-          token: ${{ secrets.GITHUB_TOKEN }}
-          allowUpdates: true
-          tag: PathOfBuilding
-          body: "${{steps.time.outputs.time}}"
-        if: github.ref == 'refs/heads/master'
   build-macos:
     runs-on: macos-latest
     steps:
@@ -71,12 +16,12 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
       - run: brew install make ninja
-      - run: make -f Makefile.darwin clean
-      - run: make -f Makefile.darwin tools
-      - run: make -f Makefile.darwin
+      - run: make clean
+      - run: make tools
+      - run: make
       - name: Package tar.xz archive
         run: tar -cf - PathOfBuilding.app | xz -c > PathOfBuilding.darwin.tar.xz
-      - name: Cheking GUI 
+      - name: Checking GUI 
         env:
           IMGUR_CLIENT_ID: ${{ secrets.IMGUR_CLIENT_ID }}
           GIT_TOKEN: ${{ secrets.GIT_TOKEN }} 
