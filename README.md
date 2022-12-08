@@ -31,6 +31,25 @@ make
 - pkg-config
 - ninja (optional, can tell meson to generate makefiles if you prefer)
 
+### Ensuring old versions of Mac:
+
+By default, the built lcurl.so links to the local version of cURL. Old
+versions of cURL on old Macs may be too old to include the relevant functions and run into this error:
+
+```
+Error loading main script: error loading module 'lcurl.safe' from file './lcurl.so':
+  dlopen(./lcurl.so, 6): Symbol not found: _curl_easy_option_by_id
+    Referenced from: ./lcurl.so (which was built for Mac OS X 13.0)
+    Expected in: /usr/lib/libcurl.4.dylib
+```
+
+To try to fix this issue, we include the libcurl.4.dylib in our app.
+
+We change it in mesonInstaller.sh based on https://stackoverflow.com/a/38709580/319066
+
+- `otool -L lcurl.so` can be used to debug the paths
+- `install_name_tool ...` is used to change the paths
+
 ## Old manual steps to build:
 
 ### Build Lua-Curl:

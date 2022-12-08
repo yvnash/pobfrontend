@@ -42,8 +42,9 @@ luacurl:
 	mv lcurl.so ../lcurl.so; \
 	popd
 
+# curl is used since mesonInstaller.sh copies over the shared library dylib
 tools:
-	brew install qt@5 luajit zlib meson
+	brew install qt@5 luajit zlib meson curl
 
 clean:
 	rm -rf PathOfBuildingBuild PathOfBuilding PathOfBuilding.app Lua-cURLv3 lcurl.so build
