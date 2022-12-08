@@ -10,6 +10,6 @@ mkdir -p ${MESON_INSTALL_PREFIX}/Contents/Frameworks
 # cURL libraries.
 #
 # Copy over the library 
-cp -f "$(brew --prefix)/opt/curl/lib/libcurl.4.dylib" ${MESON_INSTALL_PREFIX}/Contents/Frameworks
+cp -f "$(brew --prefix --installed curl)/lib/libcurl.4.dylib" ${MESON_INSTALL_PREFIX}/Contents/Frameworks
 # Change the reference to refer to the new library path
-install_name_tool -change /usr/lib/libcurl.4.dylib @executable_path/../Frameworks/libcurl.4.dylib ${MESON_INSTALL_PREFIX}/Contents/MacOS/lcurl.so
+install_name_tool -change "$(brew --prefix --installed curl)/lib/libcurl.4.dylib" @executable_path/../Frameworks/libcurl.4.dylib ${MESON_INSTALL_PREFIX}/Contents/MacOS/lcurl.so
