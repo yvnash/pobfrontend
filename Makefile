@@ -12,6 +12,13 @@ all: frontend pob
 	cp ${DIR}/Info.plist.sh ${DIR}/PathOfBuilding.app/Contents/Info.plist; \
 	echo 'Finished'
 
+# Sign with the first available identity
+sign:
+	echo 'Signing with the first available identity'; \
+	rm -rf PathOfBuilding.app/Contents/MacOS/spec/TestBuilds/3.13; \
+	codesign --force --deep --sign $$(security find-identity -v -p codesigning | awk 'FNR == 1 {print $$2}') PathOfBuilding.app; \
+	codesign -d -v PathOfBuilding.app
+
 pob: load_pob luacurl frontend
 	rm -rf PathOfBuildingBuild; \
 	cp -rf PathOfBuilding PathOfBuildingBuild; \
@@ -44,8 +51,9 @@ luacurl:
 	popd
 
 # curl is used since mesonInstaller.sh copies over the shared library dylib
+# dylibbundler is used to copy over dylibs that lcurl.so uses
 tools:
-	brew install qt@5 luajit zlib meson curl
+	brew install qt@5 luajit zlib meson curl dylibbundler
 
 # We don't usually modify the PathOfBuilding directory, so there's rarely a
 # need to delete it. We separate it out to a separate task.

@@ -10,6 +10,7 @@ else
    gl_dep = dependency('gl')
 endif
 zlib_dep = dependency('zlib')
+curl_dep = dependency('libcurl')
 
 # Import the extension module that knows how
 # to invoke Qt tools.
@@ -18,7 +19,7 @@ prep = qt5.preprocess(moc_headers : ['subscript.hpp', 'pobwindow.hpp'])
 
 executable('PathOfBuilding',
   sources : ['main.cpp', prep],
-  dependencies : [qt5_dep, gl_dep, zlib_dep, lua_dep],
+  dependencies : [qt5_dep, gl_dep, zlib_dep, lua_dep, curl_dep],
   install : true)
 
 

@@ -43,12 +43,14 @@ Error loading main script: error loading module 'lcurl.safe' from file './lcurl.
     Expected in: /usr/lib/libcurl.4.dylib
 ```
 
-To try to fix this issue, we include the libcurl.4.dylib in our app.
+To try to fix this issue, we include the libcurl.4.dylib in our app
+using dylibbundler.
 
 We change it in mesonInstaller.sh based on https://stackoverflow.com/a/38709580/319066
 
-- `otool -L lcurl.so` can be used to debug the paths
-- `install_name_tool ...` is used to change the paths
+- `otool -L lcurl.so` can be used to debug the paths.
+- `install_name_tool ...` is used to change the paths behind the scenes, but
+  dylibbundler does all the work for us.
 
 ## Old manual steps to build:
 
