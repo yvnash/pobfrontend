@@ -36,7 +36,7 @@ public:
         scriptPath = QDir::currentPath();
         scriptWorkDir = QDir::currentPath();
         basePath = QDir::currentPath();
-        userPath = QDir::currentPath();
+        userPath = QDir::homePath();
 
         fontFudge = 0;
 

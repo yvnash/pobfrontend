@@ -16,9 +16,6 @@
 #include "subscript.hpp"
 #include <unistd.h>
 #include <sys/types.h>
-#include <pwd.h>
-
-const char *homedir;
 
 lua_State *L;
 

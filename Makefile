@@ -19,10 +19,21 @@ sign:
 	codesign --force --deep --sign $$(security find-identity -v -p codesigning | awk 'FNR == 1 {print $$2}') PathOfBuilding.app; \
 	codesign -d -v PathOfBuilding.app
 
+# We remove the `launch.devMode or` to ensure the user's builds are stored not in
+# the binary, but within their user directory
+
+# Relevant code is:
+# 
+# ```lua
+# if launch.devMode or (GetScriptPath() == GetRuntimePath() and not launch.installedMode) then
+# 	-- If running in dev mode or standalone mode, put user data in the script path
+# 	self.userPath = GetScriptPath().."/"
+# ```
 pob: load_pob luacurl frontend
 	rm -rf PathOfBuildingBuild; \
 	cp -rf PathOfBuilding PathOfBuildingBuild; \
 	pushd PathOfBuildingBuild; \
+	sed -i '' 's/if launch.devMode or .*then/if false then/' src/Modules/Main.lua; \
 	unzip runtime-win32.zip lua/xml.lua lua/base64.lua lua/sha1.lua; \
 	mv lua/*.lua .; \
 	rmdir lua; \
