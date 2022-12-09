@@ -14,6 +14,9 @@ make tools
 
 # Build the entire app
 make
+
+# Optionally sign it for distribution
+make sign
 ```
 
 ### Dependencies:
