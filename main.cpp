@@ -1268,12 +1268,7 @@ static int l_GetTime(lua_State* L)
 
 static int l_GetScriptPath(lua_State* L)
 {
-    if ((homedir = getenv("HOME")) == NULL) {
-        homedir = getpwuid(getuid())->pw_dir;
-    }   
-    
-
-    lua_pushstring(L, homedir);
+    lua_pushstring(L, pobwindow->scriptPath.toStdString().c_str());
     return 1;
 }
 
