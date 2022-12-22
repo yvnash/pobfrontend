@@ -33,7 +33,7 @@ pob: load_pob luacurl frontend
 	rm -rf PathOfBuildingBuild; \
 	cp -rf PathOfBuilding PathOfBuildingBuild; \
 	pushd PathOfBuildingBuild; \
-	sed -i '' 's/if launch.devMode or .*then/if false then/' src/Modules/Main.lua; \
+	bash ../editPathOfBuildingBuild.sh; \
 	unzip runtime-win32.zip lua/xml.lua lua/base64.lua lua/sha1.lua; \
 	mv lua/*.lua .; \
 	rmdir lua; \
