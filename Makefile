@@ -1,6 +1,15 @@
 DIR := ${CURDIR}
 export PATH := /usr/local/opt/qt@5/bin:$(PATH)
-export LDFLAGS := -L/usr/local/opt/qt@5/lib
+# Some users on old versions of MacOS 10.13 run into the error:
+# dyld: cannot load 'PathOfBuilding' (load command 0x80000034 is unknown)
+#
+# It looks like 0x80000034 is associated with the fixup_chains optimization
+# that improves startup time:
+# https://www.emergetools.com/blog/posts/iOS15LaunchTime
+#
+# For compatibility, we disable that using the flag from this thread:
+# https://github.com/python/cpython/issues/97524
+export LDFLAGS := -L/usr/local/opt/qt@5/lib -Wl,-no_fixup_chains
 export CPPFLAGS := -I/usr/local/opt/qt@5/include
 export PKG_CONFIG_PATH := /usr/local/opt/qt@5/lib/pkgconfig
 
