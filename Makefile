@@ -52,7 +52,7 @@ pob: load_pob luacurl frontend
 	popd
 
 frontend: 
-	meson -Dbuildtype=release --prefix=${DIR}/PathOfBuilding.app --bindir=Contents/MacOS build
+	arch=x86_64 meson -Dbuildtype=release --prefix=${DIR}/PathOfBuilding.app --bindir=Contents/MacOS build
 
 load_pob:
 	git clone https://github.com/PathOfBuildingCommunity/PathOfBuilding.git; \
@@ -60,12 +60,20 @@ load_pob:
 	git add . && git fetch && git reset --hard origin/dev; \
 	popd
 
-# The sed below ensures that we only replace `lua` with `luajit` once
+# The seds below ensure that:
+#
+# - we only replace `lua` with `luajit` once
+# - we use pkg-config to find the right path for curl libraries
+# - we use gcc-12 from Homebrew instead of clang, to ensure that we build
+#   the x86_64 library on ARM systems
+# - we target only MacOS 10.5 or later; otherwise, we get an error
 luacurl:
 	git clone --depth 1 https://github.com/Lua-cURL/Lua-cURLv3.git; \
 	pushd Lua-cURLv3; \
 	sed -i '' 's/\?= lua$$/\?= luajit/' Makefile; \
-	sed -i '' 's@shell .* --libs libcurl@shell PKG_CONFIG_PATH=\$$\$$(brew --prefix --installed curl)/lib/pkgconfig \$$(PKG_CONFIG) --libs libcurl@' Makefile; \
+	sed -i '' 's@shell .* --libs libcurl@shell PKG_CONFIG_PATH=\$$\$$(arch --x86_64 brew --prefix --installed curl)/lib/pkgconfig \$$(PKG_CONFIG) --libs libcurl@' Makefile; \
+    sed -i '' 's@?= \$$(MAC_ENV) gcc$$@ = \$$(MAC_ENV) arch=x86_64 gcc-12@' Makefile; \
+    sed -i '' "s@MACOSX_DEPLOYMENT_TARGET='10.3'@MACOSX_DEPLOYMENT_TARGET='10.5'@" Makefile; \
 	make; \
 	mv lcurl.so ../lcurl.so; \
 	popd
@@ -73,7 +81,7 @@ luacurl:
 # curl is used since mesonInstaller.sh copies over the shared library dylib
 # dylibbundler is used to copy over dylibs that lcurl.so uses
 tools:
-	brew install qt@5 luajit zlib meson curl dylibbundler
+	arch --x86_64 brew install qt@5 luajit zlib meson curl dylibbundler gcc
 
 # We don't usually modify the PathOfBuilding directory, so there's rarely a
 # need to delete it. We separate it out to a separate task.

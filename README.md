@@ -6,13 +6,26 @@ A cross-platform [Path of Building](https://github.com/Openarl/PathOfBuilding) d
 Building
 --------
 
-### Steps to build
+### Steps to build an x86_64 binary on M1 Macs
+
+Before starting, you need to install Homebrew for x86_64.
+
+1. Install Rosetta if you haven't via `softwareupdate --install-rosetta`
+2. Run the [Homebrew installation command](https://docs.brew.sh/Installation),
+   but prepend `arch --x86_64`. The command will be `arch --x86_64 bash -c ...`
+3. Create a `~/.intelbrew` file with these contents:
+   ```sh
+   eval "$(/usr/local/bin/brew shellenv)"
+   alias brew='arch --x86_64 /usr/local/bin/brew'
+   ```
+4. Include it to update your environment variables by running `. ~/.intelbrew`
 
 ```sh
 # Run this only once after installing Homebrew to install dependencies
 make tools
 
 # Build the entire app
+export PATH="/usr/local/opt/qt@5/bin:$PATH"
 make
 
 # Optionally sign it for distribution
