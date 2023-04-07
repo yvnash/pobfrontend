@@ -43,12 +43,6 @@ pob: load_pob luacurl frontend
 	cp -rf PathOfBuilding PathOfBuildingBuild; \
 	pushd PathOfBuildingBuild; \
 	bash ../editPathOfBuildingBuild.sh; \
-	unzip runtime-win32.zip lua/xml.lua lua/base64.lua lua/sha1.lua; \
-	mv lua/*.lua .; \
-	rmdir lua; \
-	cp ../lcurl.so .; \
-	mv src/* .; \
-	rmdir src; \
 	popd
 
 frontend: 
@@ -60,20 +54,10 @@ load_pob:
 	git add . && git fetch && git reset --hard origin/dev; \
 	popd
 
-# The seds below ensure that:
-#
-# - we only replace `lua` with `luajit` once
-# - we use pkg-config to find the right path for curl libraries
-# - we use gcc-12 from Homebrew instead of clang, to ensure that we build
-#   the x86_64 library on ARM systems
-# - we target only MacOS 10.5 or later; otherwise, we get an error
 luacurl:
 	git clone --depth 1 https://github.com/Lua-cURL/Lua-cURLv3.git; \
-	pushd Lua-cURLv3; \
-	sed -i '' 's/\?= lua$$/\?= luajit/' Makefile; \
-	sed -i '' 's@shell .* --libs libcurl@shell PKG_CONFIG_PATH=\$$\$$(arch --x86_64 brew --prefix --installed curl)/lib/pkgconfig \$$(PKG_CONFIG) --libs libcurl@' Makefile; \
-    sed -i '' 's@?= \$$(MAC_ENV) gcc$$@ = \$$(MAC_ENV) arch=x86_64 gcc-12@' Makefile; \
-    sed -i '' "s@MACOSX_DEPLOYMENT_TARGET='10.3'@MACOSX_DEPLOYMENT_TARGET='10.5'@" Makefile; \
+	bash editLuaCurlMakefile.sh; \
+    pushd Lua-cURLv3; \
 	make; \
 	mv lcurl.so ../lcurl.so; \
 	popd

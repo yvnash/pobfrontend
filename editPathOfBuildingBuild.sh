@@ -1,6 +1,5 @@
 #!/bin/bash
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-cd "$DIR/PathOfBuildingBuild"
 
 # We remove the `launch.devMode or` to ensure the user's builds are stored not in
 # the binary, but within their user directory
@@ -19,3 +18,11 @@ sed -E -i '' "$SED_COMMAND" src/Classes/TreeTab.lua
 sed -E -i '' "$SED_COMMAND" src/Modules/BuildSiteTools.lua
 # Do not remove SSL for LaunchInstall and Update as that's more sensitive, but
 # also unused.
+
+# Run remaining setup
+unzip runtime-win32.zip lua/xml.lua lua/base64.lua lua/sha1.lua
+mv lua/*.lua .
+rmdir lua
+cp ../lcurl.so .
+mv src/* .
+rmdir src
