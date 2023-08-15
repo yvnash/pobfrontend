@@ -13,7 +13,7 @@ export LDFLAGS := -L/usr/local/opt/qt@5/lib -Wl,-no_fixup_chains
 export CPPFLAGS := -I/usr/local/opt/qt@5/include
 export PKG_CONFIG_PATH := /usr/local/opt/qt@5/lib/pkgconfig
 
-all: frontend pob 
+all: frontend pob
 	pushd build; \
 	ninja install; \
 	popd; \
@@ -32,7 +32,7 @@ sign:
 # the binary, but within their user directory
 
 # Relevant code is:
-# 
+#
 # ```lua
 # if launch.devMode or (GetScriptPath() == GetRuntimePath() and not launch.installedMode) then
 # 	-- If running in dev mode or standalone mode, put user data in the script path
@@ -45,7 +45,7 @@ pob: load_pob luacurl frontend
 	bash ../editPathOfBuildingBuild.sh; \
 	popd
 
-frontend: 
+frontend:
 	arch=x86_64 meson -Dbuildtype=release --prefix=${DIR}/PathOfBuilding.app --bindir=Contents/MacOS build
 
 load_pob:
@@ -65,7 +65,7 @@ luacurl:
 # curl is used since mesonInstaller.sh copies over the shared library dylib
 # dylibbundler is used to copy over dylibs that lcurl.so uses
 tools:
-	arch --x86_64 brew install qt@5 luajit zlib meson curl dylibbundler gcc
+	arch --x86_64 brew install qt@5 luajit zlib meson curl dylibbundler gcc@12
 
 # We don't usually modify the PathOfBuilding directory, so there's rarely a
 # need to delete it. We separate it out to a separate task.
