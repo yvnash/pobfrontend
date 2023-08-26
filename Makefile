@@ -25,6 +25,7 @@ all: frontend pob
 sign:
 	echo 'Signing with the first available identity'; \
 	rm -rf PathOfBuilding.app/Contents/MacOS/spec/TestBuilds/3.13; \
+    codesign --force --deep --sign $$(security find-identity -v -p codesigning | awk 'FNR == 1 {print $$2}') PathOfBuilding.app/Contents/MacOS/lcurl.so PathOfBuilding.app/Contents/libs/*; \
 	codesign --force --deep --sign $$(security find-identity -v -p codesigning | awk 'FNR == 1 {print $$2}') PathOfBuilding.app; \
 	codesign -d -v PathOfBuilding.app
 
