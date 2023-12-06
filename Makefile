@@ -9,8 +9,18 @@ export PATH := /usr/local/opt/qt@5/bin:$(PATH)
 #
 # For compatibility, we disable that using the flag from this thread:
 # https://github.com/python/cpython/issues/97524
-export LDFLAGS := -L/usr/local/opt/qt@5/lib -Wl,-no_fixup_chains
-export CPPFLAGS := -I/usr/local/opt/qt@5/include
+export LDFLAGS := -L/usr/local/opt/qt@5/lib -Wl,-no_fixup_chains -L/usr/local/opt/llvm/lib/c++ -Wl,-rpath,/usr/local/opt/llvm/lib/c++
+
+# Some users also reported that they faced this error:
+# dyld: Symbol not found: __ZTVNSt3__13pmr25monotonic_buffer_resourceE
+# Expected in: /usr/lib/libc++.1.dylib
+#
+# Because of that, we use Homebrew's libc++ by adding to LDFLAGS:
+# `-L/usr/local/opt/llvm/lib/c++ -Wl,-rpath,/usr/local/opt/llvm/lib/c++`
+#
+# And adding to CPPFLAGS:
+# `-I/usr/local/opt/llvm/include`
+export CPPFLAGS := -I/usr/local/opt/qt@5/include -I/usr/local/opt/llvm/include
 export PKG_CONFIG_PATH := /usr/local/opt/qt@5/lib/pkgconfig
 
 all: frontend pob
@@ -65,8 +75,9 @@ luacurl:
 
 # curl is used since mesonInstaller.sh copies over the shared library dylib
 # dylibbundler is used to copy over dylibs that lcurl.so uses
+# llvm is used so we can bundle a custom libc++ for old Mac compatibility
 tools:
-	arch --x86_64 brew install qt@5 luajit zlib meson curl dylibbundler gcc@12
+	arch --x86_64 brew install qt@5 luajit zlib meson curl dylibbundler gcc@12 llvm
 
 # We don't usually modify the PathOfBuilding directory, so there's rarely a
 # need to delete it. We separate it out to a separate task.
