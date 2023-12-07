@@ -19,8 +19,15 @@ Before starting, you need to install Homebrew for x86_64.
    alias brew='arch --x86_64 /usr/local/bin/brew'
    ```
 4. Include it to update your environment variables by running `. ~/.intelbrew`
+5. Edit Homebrew to fetch packages for Ventura (10.13), since the Qt package
+   for Sonoma (10.14) breaks compatibility with libc++: see [this error](https://www.pathofexile.com/forum/view-thread/3009944/page/34#:~:text=__ZTVNSt3__13pmr25monotonic_buffer_resourceE)
 
 ```sh
+vim /usr/local/Homebrew/Library/Homebrew/brew.sh
+# Edit the file to comment out the version and hardcode it:
+# #HOMEBREW_MACOS_VERSION="$(/usr/bin/sw_vers -productVersion)"
+# HOMEBREW_MACOS_VERSION="12.0.0"
+
 # Run this only once after installing Homebrew to install dependencies
 make tools
 
@@ -47,7 +54,7 @@ make sign
 - pkg-config
 - ninja (optional, can tell meson to generate makefiles if you prefer)
 
-### Ensuring old versions of Mac:
+### Ensuring old versions of Mac are compatible:
 
 By default, the built lcurl.so links to the local version of cURL. Old
 versions of cURL on old Macs may be too old to include the relevant functions and run into this error:

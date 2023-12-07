@@ -9,18 +9,8 @@ export PATH := /usr/local/opt/qt@5/bin:$(PATH)
 #
 # For compatibility, we disable that using the flag from this thread:
 # https://github.com/python/cpython/issues/97524
-export LDFLAGS := -L/usr/local/opt/qt@5/lib -Wl,-no_fixup_chains -L/usr/local/opt/llvm/lib/c++ -Wl,-rpath,/usr/local/opt/llvm/lib/c++
-
-# Some users also reported that they faced this error:
-# dyld: Symbol not found: __ZTVNSt3__13pmr25monotonic_buffer_resourceE
-# Expected in: /usr/lib/libc++.1.dylib
-#
-# Because of that, we use Homebrew's libc++ by adding to LDFLAGS:
-# `-L/usr/local/opt/llvm/lib/c++ -Wl,-rpath,/usr/local/opt/llvm/lib/c++`
-#
-# And adding to CPPFLAGS:
-# `-I/usr/local/opt/llvm/include`
-export CPPFLAGS := -I/usr/local/opt/qt@5/include -I/usr/local/opt/llvm/include
+export LDFLAGS := -L/usr/local/opt/qt@5/lib -Wl,-no_fixup_chains
+export CPPFLAGS := -I/usr/local/opt/qt@5/include
 export PKG_CONFIG_PATH := /usr/local/opt/qt@5/lib/pkgconfig
 
 all: frontend pob
@@ -35,8 +25,9 @@ all: frontend pob
 sign:
 	echo 'Signing with the first available identity'; \
 	rm -rf PathOfBuilding.app/Contents/MacOS/spec/TestBuilds/3.13; \
-    codesign --force --deep --sign $$(security find-identity -v -p codesigning | awk 'FNR == 1 {print $$2}') PathOfBuilding.app/Contents/MacOS/lcurl.so PathOfBuilding.app/Contents/libs/*; \
-	codesign --force --deep --sign $$(security find-identity -v -p codesigning | awk 'FNR == 1 {print $$2}') PathOfBuilding.app; \
+    codesign --force --deep --sign $$(security find-identity -v -p codesigning | grep Distribution | awk 'FNR == 1 {print $$2}') PathOfBuilding.app/Contents/MacOS/lcurl.so PathOfBuilding.app/Contents/libs/*; \
+	codesign --force --deep --sign $$(security find-identity -v -p codesigning | grep Distribution | awk 'FNR == 1 {print $$2}') PathOfBuilding.app/Contents/MacOS/PathOfBuilding; \
+	codesign --force --deep --sign $$(security find-identity -v -p codesigning | grep Distribution | awk 'FNR == 1 {print $$2}') PathOfBuilding.app; \
 	codesign -d -v PathOfBuilding.app
 
 # We remove the `launch.devMode or` to ensure the user's builds are stored not in
@@ -75,9 +66,8 @@ luacurl:
 
 # curl is used since mesonInstaller.sh copies over the shared library dylib
 # dylibbundler is used to copy over dylibs that lcurl.so uses
-# llvm is used so we can bundle a custom libc++ for old Mac compatibility
 tools:
-	arch --x86_64 brew install qt@5 luajit zlib meson curl dylibbundler gcc@12 llvm
+	arch --x86_64 brew install qt@5 luajit zlib meson curl dylibbundler gcc@12
 
 # We don't usually modify the PathOfBuilding directory, so there's rarely a
 # need to delete it. We separate it out to a separate task.
