@@ -12,6 +12,11 @@ endif
 zlib_dep = dependency('zlib')
 curl_dep = dependency('libcurl')
 
+# Added flag based on https://stackoverflow.com/a/37729971/319066
+# and arguments based on https://mesonbuild.com/Adding-arguments.html
+add_project_arguments('-mmacos-version-min=10.12', language : 'c')
+add_project_arguments('-mmacos-version-min=10.12', language : 'cpp')
+
 # Import the extension module that knows how
 # to invoke Qt tools.
 qt5 = import('qt5')
