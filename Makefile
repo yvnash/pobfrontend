@@ -25,9 +25,9 @@ all: frontend pob
 sign:
 	echo 'Signing with the first available identity'; \
 	rm -rf PathOfBuilding.app/Contents/MacOS/spec/TestBuilds/3.13; \
-    codesign --force --deep --sign $$(security find-identity -v -p codesigning | grep Distribution | awk 'FNR == 1 {print $$2}') PathOfBuilding.app/Contents/MacOS/lcurl.so PathOfBuilding.app/Contents/libs/*; \
-	codesign --force --deep --sign $$(security find-identity -v -p codesigning | grep Distribution | awk 'FNR == 1 {print $$2}') PathOfBuilding.app/Contents/MacOS/PathOfBuilding; \
-	codesign --force --deep --sign $$(security find-identity -v -p codesigning | grep Distribution | awk 'FNR == 1 {print $$2}') PathOfBuilding.app; \
+    codesign -v --force --deep --sign $$(security find-identity -v -p codesigning | grep Distribution | awk 'FNR == 1 {print $$2}') PathOfBuilding.app/Contents/MacOS/lcurl.so PathOfBuilding.app/Contents/libs/*; \
+	codesign -v --force --deep --sign $$(security find-identity -v -p codesigning | grep Distribution | awk 'FNR == 1 {print $$2}') PathOfBuilding.app/Contents/MacOS/PathOfBuilding; \
+	codesign -v --force --deep --sign $$(security find-identity -v -p codesigning | grep Distribution | awk 'FNR == 1 {print $$2}') PathOfBuilding.app; \
 	codesign -d -v PathOfBuilding.app
 
 # We remove the `launch.devMode or` to ensure the user's builds are stored not in
