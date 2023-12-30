@@ -1,0 +1,36 @@
+name: build
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+  schedule:
+    - cron: '30 13 * * *'
+
+jobs:
+  build:
+
+    runs-on: macos-12
+
+    steps:
+      - uses: actions/checkout@v3
+      - run: brew install make ninja
+      - run: make tools
+      - run: make clean
+      - run: make
+      - run: zip -r PathOfBuilding.zip PathOfBuilding.app
+
+      # Based on https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#setting-an-output-parameter
+      - id: get-version
+        run: |
+          version=$(sed -n 's/^.*number="\([0-9.]*\)".*$/\1/p' PathOfBuilding/manifest.xml)
+          echo "VERSION=$version" >> "$GITHUB_OUTPUT"
+      - name: Upload MacOS artifacts into Github
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "PathOfBuilding.zip"
+          token: ${{ secrets.GITHUB_TOKEN }}
+          allowUpdates: true
+          tag: v${{ steps.get-version.outputs.VERSION }}
+        if: github.ref == 'refs/heads/master'

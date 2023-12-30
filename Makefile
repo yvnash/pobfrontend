@@ -21,25 +21,6 @@ all: frontend pob
 	cp ${DIR}/Info.plist.sh ${DIR}/PathOfBuilding.app/Contents/Info.plist; \
 	echo 'Finished'
 
-# Sign with the first available identity
-sign:
-	echo 'Signing with the first available identity'; \
-	rm -rf PathOfBuilding.app/Contents/MacOS/spec/TestBuilds/3.13; \
-    codesign -v --force --deep --sign $$(security find-identity -v -p codesigning | grep Distribution | awk 'FNR == 1 {print $$2}') PathOfBuilding.app/Contents/MacOS/lcurl.so PathOfBuilding.app/Contents/libs/*; \
-	codesign -v --force --deep --sign $$(security find-identity -v -p codesigning | grep Distribution | awk 'FNR == 1 {print $$2}') PathOfBuilding.app/Contents/MacOS/PathOfBuilding; \
-	codesign -v --force --deep --sign $$(security find-identity -v -p codesigning | grep Distribution | awk 'FNR == 1 {print $$2}') PathOfBuilding.app; \
-	codesign -d -v PathOfBuilding.app
-
-# We remove the `launch.devMode or` to ensure the user's builds are stored not in
-# the binary, but within their user directory
-
-# Relevant code is:
-#
-# ```lua
-# if launch.devMode or (GetScriptPath() == GetRuntimePath() and not launch.installedMode) then
-# 	-- If running in dev mode or standalone mode, put user data in the script path
-# 	self.userPath = GetScriptPath().."/"
-# ```
 pob: load_pob luacurl frontend
 	rm -rf PathOfBuildingBuild; \
 	cp -rf PathOfBuilding PathOfBuildingBuild; \
@@ -50,10 +31,12 @@ pob: load_pob luacurl frontend
 frontend:
 	arch=x86_64 meson -Dbuildtype=release --prefix=${DIR}/PathOfBuilding.app --bindir=Contents/MacOS build
 
+# We checkout the latest version.
 load_pob:
 	git clone https://github.com/PathOfBuildingCommunity/PathOfBuilding.git; \
 	pushd PathOfBuilding; \
-	git add . && git fetch && git reset --hard origin/dev; \
+	git fetch; \
+	git add . && git reset --hard HEAD && git checkout $$(git describe --tags $$(git rev-list --tags --max-count=1)); \
 	popd
 
 luacurl:
