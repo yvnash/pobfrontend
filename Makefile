@@ -21,7 +21,7 @@ all: frontend pob
 	cp ${DIR}/Info.plist.sh ${DIR}/PathOfBuilding.app/Contents/Info.plist; \
 	echo 'Finished'
 
-pob: load_pob luacurl frontend
+pob: load_pob luautf8 luacurl frontend
 	rm -rf PathOfBuildingBuild; \
 	cp -rf PathOfBuilding PathOfBuildingBuild; \
 	pushd PathOfBuildingBuild; \
@@ -47,10 +47,14 @@ luacurl:
 	mv lcurl.so ../lcurl.so; \
 	popd
 
+luautf8:
+	cp ~/.luarocks/lib/lua/5.1/lua-utf8.so .
+
 # curl is used since mesonInstaller.sh copies over the shared library dylib
 # dylibbundler is used to copy over dylibs that lcurl.so uses
 tools:
-	arch --x86_64 brew install qt@5 luajit zlib meson curl dylibbundler gcc@12
+	arch --x86_64 brew install qt@5 luajit zlib meson curl dylibbundler gcc@12 luarocks; \
+		luarocks install luautf8 --lua-version 5.1
 
 # We don't usually modify the PathOfBuilding directory, so there's rarely a
 # need to delete it. We separate it out to a separate task.
@@ -58,4 +62,4 @@ fullyclean: clean
 	rm -rf PathOfBuilding
 
 clean:
-	rm -rf PathOfBuildingBuild PathOfBuilding.app Lua-cURLv3 lcurl.so build
+	rm -rf PathOfBuildingBuild PathOfBuilding.app Lua-cURLv3 lcurl.so lua-utf8.so build
